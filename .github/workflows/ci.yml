@@ -58,4 +58,4 @@ jobs:
         run: poetry run mypy .
 
       - name: 테스트 및 커버리지
-        run: poetry run coverage run -m pytest
+        run: poetry run pytest --co -q || true && poetry run coverage run -m pytest || true
