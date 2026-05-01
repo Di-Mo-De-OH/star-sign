@@ -1,6 +1,6 @@
 # 🌟 별자리 궁합 서비스
 
-> 방장이 URL을 생성하고 참여자들과 별자리 궁합을 확인하는 서비스
+> 고유 URL을 생성하고 참여자들의 생년월일을 입력받아 별자리 기반 궁합 점수와 관계도를 시각화하는 서비스
 
 ---
 
@@ -19,14 +19,14 @@
 
 ## 핵심 기능
 
-- **방 생성**: 로그인 유저(방장)가 고유 URL을 발급받아 참여자에게 공유
-- **URL 저장**: 회원가입 유저는 본인이 생성한 방 URL 저장 및 조회 가능
-- **참여**: 비로그인 유저도 URL로 방 참여 가능
+- **URL 생성**: 로그인 유저가 고유 UUID 기반 URL을 발급받아 참여자에게 공유
+- **URL 저장**: 로그인 유저는 본인이 생성한 URL 목록 조회 가능 (만료 후에도 조회 가능)
+- **참여**: 비로그인 유저도 URL로 접속하여 참여 가능
 - **별자리 자동 계산**: 생년월일 입력 시 별자리 자동 매핑
 - **궁합 점수**: 참여자 간 0~100점 궁합 점수 계산
 - **관계도 시각화**: 전체 참여자 궁합 관계도 표시
 - **오늘의 운세**: 별자리별 일별 운세 제공
-- **방 만료**: 생성 후 24시간 자동 만료
+- **URL 만료**: 생성 후 24시간 이후 일반 접근 불가 (DB 데이터 유지)
 
 ---
 
@@ -61,7 +61,7 @@ User
 ├── nickname
 └── created_at
 
-Room
+Link
 ├── id
 ├── host (FK → User)
 ├── uuid (고유 URL 키)
@@ -71,7 +71,7 @@ Room
 
 Participant
 ├── id
-├── room (FK → Room)
+├── link (FK → Link)
 ├── name
 ├── birth_date
 ├── zodiac (FK → Zodiac)
@@ -79,7 +79,7 @@ Participant
 
 Compatibility
 ├── id
-├── room (FK → Room)
+├── link (FK → Link)
 ├── participant_a (FK → Participant)
 ├── participant_b (FK → Participant)
 └── score (0~100)
@@ -111,27 +111,27 @@ Fortune
 | POST | `/api/v1/auth/login` | 로그인 |
 | POST | `/api/v1/auth/logout` | 로그아웃 |
 
-### 방
+### URL 관리
 
 | Method | URL | 설명 | 인증 |
 |--------|-----|------|------|
-| POST | `/api/v1/rooms` | 방 생성 | 필요 |
-| GET | `/api/v1/rooms/{uuid}` | 방 조회 | 불필요 |
-| GET | `/api/v1/rooms` | 내 방 목록 조회 | 필요 |
-| DELETE | `/api/v1/rooms/{uuid}` | 방 삭제 | 필요 |
+| POST | `/api/v1/links` | URL 생성 | 필요 |
+| GET | `/api/v1/links/{uuid}` | URL 조회 | 불필요 |
+| GET | `/api/v1/links` | 내 URL 목록 조회 | 필요 |
+| DELETE | `/api/v1/links/{uuid}` | URL 삭제 | 필요 |
 
 ### 참여자
 
 | Method | URL | 설명 | 인증 |
 |--------|-----|------|------|
-| POST | `/api/v1/rooms/{uuid}/participants` | 참여자 등록 | 불필요 |
-| GET | `/api/v1/rooms/{uuid}/participants` | 참여자 목록 조회 | 불필요 |
+| POST | `/api/v1/links/{uuid}/participants` | 참여자 등록 | 불필요 |
+| GET | `/api/v1/links/{uuid}/participants` | 참여자 목록 조회 | 불필요 |
 
 ### 궁합
 
 | Method | URL | 설명 | 인증 |
 |--------|-----|------|------|
-| GET | `/api/v1/rooms/{uuid}/compatibility` | 전체 궁합 관계도 조회 | 불필요 |
+| GET | `/api/v1/links/{uuid}/compatibility` | 전체 궁합 관계도 조회 | 불필요 |
 
 ### 운세
 
@@ -172,7 +172,7 @@ star-sign/
 │   └── wsgi.py
 ├── apps/
 │   ├── accounts/
-│   ├── rooms/
+│   ├── links/
 │   ├── participants/
 │   ├── compatibility/
 │   ├── zodiac/

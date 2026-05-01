@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: star_sign
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SECRET_KEY: test-secret-key
+      DB_NAME: star_sign
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: localhost
+      DB_PORT: 5432
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 3.13 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Poetry 설치
+        run: pip install poetry
+
+      - name: 의존성 설치
+        run: poetry install
+
+      - name: black 포맷 검사
+        run: poetry run black --check .
+
+      - name: ruff 린트 검사
+        run: poetry run ruff check .
+
+      - name: mypy 타입 검사
+        run: poetry run mypy .
+
+      - name: 테스트 및 커버리지
+        run: poetry run coverage run -m pytest
