@@ -45,8 +45,7 @@ class Account(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 
 class SocialAccount(TimeStampedModel):
     class Provider(models.TextChoices):
-        KAKAO = "Kakao", "Kakao"
-        GOOGLE = "GOOGLE", "Google"
+        KAKAO = "kakao", "Kakao"
 
     user = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="social_accounts")
     provider = models.CharField(max_length=10, choices=Provider.choices)
