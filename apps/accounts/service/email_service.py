@@ -1,19 +1,22 @@
+import secrets
+import uuid
+
 from django.core.mail import send_mail
 from django_redis import cache
 from redis import RedisError
 from rest_framework.exceptions import ValidationError
+
+from apps.core.exceptions import ExpiredException
 from apps.core.utils import Base62
-import uuid
-import secrets
-from apps.core.exceptions import NotFoundException,ExpiredException
+
 
 class EmailSendService:
 
-    def send_email(self,email:str)->None:
+    def send_email(self, email: str) -> None:
         code = Base62.uuid_encode(uuid.uuid4(), length=6)
         cache_key = f"email_{email}"
         try:
-            cache.set(cache_key,code,timeout=180)
+            cache.set(cache_key, code, timeout=180)
         except RedisError:
             raise ValidationError("Server error. Please try again.")
 
@@ -27,11 +30,14 @@ class EmailSendService:
             )
         except Exception:
             cache.delete(cache_key)
-            raise ValidationError(f"Failed to send email.")
+            raise ValidationError("Failed to send email.")
 
-    def verify_code(self,email:str,code:str)->str:
+    def verify_code(self, email: str, code: str) -> str:
         cache_key = f"email_{email}"
-        cache_data = cache.get(cache_key)
+        try:
+            cache_data = cache.get(cache_key)
+        except RedisError:
+            raise ValidationError("Server error. Please try again.")
 
         if not cache_data:
             raise ExpiredException()
@@ -41,11 +47,10 @@ class EmailSendService:
         verify_token = secrets.token_urlsafe(32)
 
         token_key = f"email_token_{verify_token}"
-        data = {"email":email,"code":code}
+        data = {"email": email, "code": code}
         try:
-            cache.set(token_key,data,timeout = 600)
+            cache.set(token_key, data, timeout=600)
         except RedisError:
             raise ValidationError("Server error. Please try again.")
         cache.delete(cache_key)
         return verify_token
-

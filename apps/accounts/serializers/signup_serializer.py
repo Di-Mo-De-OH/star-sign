@@ -1,23 +1,33 @@
-from apps.accounts.model.signup_models import Account
 import re
+
 from django_redis import cache
 from rest_framework import serializers
-from apps.accounts.service.signup_service import SignUpService
+
+from apps.accounts.models.signup_models import Account
+
 
 class SignUpRequestSerializer(serializers.ModelSerializer):
     email_token = serializers.CharField(write_only=True)
-    password = serializers.CharField(write_only=True,)
-    password_confirm = serializers.CharField(write_only=True,)
+    password = serializers.CharField(
+        write_only=True,
+    )
+    password_confirm = serializers.CharField(
+        write_only=True,
+    )
+
     class Meta:
         model = Account
         fields = [
-            "email",
             "nickname",
             "email_token",
             "password",
             "password_confirm",
         ]
-    def validate_email_token(self,value: str) -> str:
+        extra_kwargs = {
+            "nickname": {"validators": []},
+        }
+
+    def validate_email_token(self, value: str) -> str:
         cache_key = f"email_token_{value}"
         cache_data = cache.get(cache_key)
         if not cache_data:
@@ -36,10 +46,11 @@ class SignUpRequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Password must contain at least one special character")
         return data
 
-    def validate(self,data:dict)->dict:
+    def validate(self, data: dict) -> dict:
         if data["password"] != data["password_confirm"]:
             raise serializers.ValidationError("Passwords must match")
         return data
+
 
 class AccountResponseSerializer(serializers.ModelSerializer):
 
