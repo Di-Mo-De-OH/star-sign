@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from apps.accounts.models import Account, SocialAccount
+from apps.accounts.model.signup_models import Account, SocialAccount
 
 
 class AccountTest(TestCase):

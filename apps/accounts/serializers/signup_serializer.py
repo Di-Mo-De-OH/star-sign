@@ -1,33 +1,28 @@
+from apps.accounts.model.signup_models import Account
 import re
-
+from django_redis import cache
 from rest_framework import serializers
-
-from apps.accounts.models import Account
-
-
-class EmailSendSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-
-
-class EmailVerifySerializer(serializers.Serializer):
-    token = serializers.CharField()
-    code = serializers.CharField()
-
+from apps.accounts.service.signup_service import SignUpService
 
 class SignUpRequestSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    password_confirm = serializers.CharField(write_only=True)
     email_token = serializers.CharField(write_only=True)
-
+    password = serializers.CharField(write_only=True,)
+    password_confirm = serializers.CharField(write_only=True,)
     class Meta:
         model = Account
         fields = [
             "email",
-            "password",
-            "password_confirm",
             "nickname",
             "email_token",
+            "password",
+            "password_confirm",
         ]
+    def validate_email_token(self,value: str) -> str:
+        cache_key = f"email_token_{value}"
+        cache_data = cache.get(cache_key)
+        if not cache_data:
+            raise serializers.ValidationError("This email is not registered")
+        return value
 
     def validate_password(self, data: str) -> str:
         """Password must be 8-15 chars, include letter, number, and special character."""
@@ -41,7 +36,16 @@ class SignUpRequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Password must contain at least one special character")
         return data
 
-    def validate(self, data: dict) -> dict:
+    def validate(self,data:dict)->dict:
         if data["password"] != data["password_confirm"]:
-            raise serializers.ValidationError("Passwords don't match")
+            raise serializers.ValidationError("Passwords must match")
         return data
+
+class AccountResponseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Account
+        fields = [
+            "email",
+            "nickname",
+        ]

@@ -1,7 +1,37 @@
-from django.conf import settings
-from django.core.mail import send_mail
+import string
+import uuid
+from typing import Final
 
 
-def send_email(subject, message: str, to_email):
-    to_email = to_email if isinstance(to_email, list) else [to_email]
-    send_mail(subject, message, settings.EMAIL_HOST_USER, to_email)
+class Base62:
+    BASE: Final[str] = string.ascii_letters + string.digits
+    BASE_LEN: Final[int] = len(BASE)
+
+    @classmethod
+    def encode(cls, num: int) -> str:
+        if num < 0:
+            raise ValueError(f"{cls}.encode() needs positive integer but you passed: {num}")
+
+        if num == 0:
+            return cls.BASE[0]
+
+        result = []
+
+        while num:
+            num, remainder = divmod(num, cls.BASE_LEN)
+            result.append(cls.BASE[remainder])
+
+        return "".join(result)
+
+    @classmethod
+    def uuid_encode(cls, u: uuid.UUID, length: int = 6) -> str:
+        """
+        UUID 객체를 Base62 문자열로 변환
+
+        Args:
+            u (uuid.UUID): 변환할 UUID 객체
+
+        Returns:
+            str: Base62로 인코딩된 문자열
+        """
+        return cls.encode(u.int)[:length]

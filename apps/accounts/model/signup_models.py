@@ -43,13 +43,13 @@ class Account(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         return self.email
 
 
-class SocialAccount(TimeStampedModel):
-    class Provider(models.TextChoices):
-        KAKAO = "kakao", "Kakao"
-
-    user = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="social_accounts")
-    provider = models.CharField(max_length=10, choices=Provider.choices)
-    provider_id = models.CharField(max_length=255)
-
-    class Meta:
-        unique_together = ("provider", "provider_id")
+# class SocialAccount(TimeStampedModel):
+#     class Provider(models.TextChoices):
+#         KAKAO = "kakao", "Kakao"
+#
+#     user = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="social_accounts")
+#     provider = models.CharField(max_length=10, choices=Provider.choices)
+#     provider_id = models.CharField(max_length=255)
+#
+#     class Meta:
+#         unique_together = ("provider", "provider_id")
