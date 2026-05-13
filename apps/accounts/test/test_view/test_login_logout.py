@@ -23,17 +23,17 @@ class LoginViewTest(BaseViewTest):
     def setUp(self) -> None:
         self.client = APIClient()
 
-    def test_login_view(self):
+    def test_login_success(self):
         url = reverse("accounts:login")
         response = self.client.post(url, {"email": "test@test.com", "password": "Test@1234"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_account_none(self) -> None:
+    def test_login_invalid_credentials_error(self) -> None:
         url = reverse("accounts:login")
         response = self.client.post(url, {"email": "test2@test.com", "password": "Test@1234"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_jwt_token_error(self) -> None:
+    def test_relogin_token_rotation_success(self) -> None:
         url = reverse("accounts:login")
         response = self.client.post(url, {"email": "test@test.com", "password": "Test@1234"})
         first_refresh_token = response.cookies["refresh_token"].value
@@ -44,7 +44,7 @@ class LoginViewTest(BaseViewTest):
         self.assertEqual(response_second.status_code, status.HTTP_200_OK)
         self.assertNotEqual(first_refresh_token, second_refresh_token)
 
-    def test_blacklist_token_login(self) -> None:
+    def test_login_blacklisted_token_error(self) -> None:
         url = reverse("accounts:login")
         response = self.client.post(url, {"email": "test@test.com", "password": "Test@1234"})
         refresh_token = response.cookies["refresh_token"].value
@@ -69,7 +69,7 @@ class LogoutViewTest(BaseViewTest):
         self.access_token = login_response.data["access_token"]
         self.refresh_token = login_response.cookies["refresh_token"].value
 
-    def test_logout_view(self):
+    def test_logout_success(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
         self.client.cookies["refresh_token"] = self.refresh_token
 
@@ -81,7 +81,7 @@ class LogoutViewTest(BaseViewTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.cookies["refresh_token"].value, "")
 
-    def test_logout_no_cookie(self) -> None:
+    def test_logout_no_cookie_error(self) -> None:
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
         self.client.cookies.clear()
         url = reverse("accounts:logout")
