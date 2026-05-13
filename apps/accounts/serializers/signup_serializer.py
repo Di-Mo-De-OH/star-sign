@@ -23,7 +23,7 @@ class SignUpRequestSerializer(serializers.ModelSerializer):
             "password",
             "password_confirm",
         ]
-        extra_kwargs = {
+        extra_kwargs: dict[str, dict] = {
             "nickname": {"validators": []},
         }
 
