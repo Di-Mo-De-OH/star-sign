@@ -12,7 +12,8 @@ dependencies = [
     "djangorestframework (>=3.17.1,<4.0.0)",
     "psycopg2-binary (>=2.9.12,<3.0.0)",
     "python-dotenv (>=1.2.2,<2.0.0)",
-    "djangorestframework-simplejwt (>=5.5.1,<6.0.0)"
+    "djangorestframework-simplejwt (>=5.5.1,<6.0.0)",
+    "django-redis (>=6.0.0,<7.0.0)"
 ]
 
 
@@ -33,6 +34,7 @@ ignore = ["F401", "F403"]
 
 [tool.ruff.lint.per-file-ignores]
 "config/settings/*.py" = ["F403", "F405"]
+"*/migrations/*.py" = ["E501"]
 
 [tool.black]
 target-version = ["py313"]
@@ -41,19 +43,34 @@ line-length = 120
 [tool.mypy]
 python_version = "3.13"
 ignore_missing_imports = true
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"
+
+[tool.coverage.run]
+omit = [
+    "*/migrations/*",
+    "*/test/*",
+    "config/*",
+    "manage.py",
+    "*/utils.py",
+]
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "config.settings.local"
+DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["tests.py", "test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+addopts = "--cov=apps --cov-report=term-missing"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.20.2"
+mypy = "1.15.0"
 black = "^26.3.1"
 ruff = "^0.15.12"
 coverage = "^7.13.5"
 pytest = "^9.0.3"
 pytest-django = "^4.12.0"
-django-stubs = "^6.0.3"
+django-stubs = "^6.0.4"
+pytest-cov = "^7.1.0"
 
