@@ -1,6 +1,6 @@
 from config.settings.base import *
 
-SECRET_KEY = "test-insecure-secret-key"
+SECRET_KEY = "test-insecure-secret-key-must-be-at-least-32-bytes"
 
 DEBUG = True
 

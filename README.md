@@ -44,9 +44,9 @@ Gunicorn
     │
     ▼
 Django REST Framework
-    │
-    ▼
-PostgreSQL
+    │         │
+    ▼         ▼
+PostgreSQL  Redis (JWT 블랙리스트)
 ```
 
 ---
@@ -107,9 +107,11 @@ Fortune
 
 | Method | URL | 설명 |
 |--------|-----|------|
-| POST | `/api/v1/auth/signup` | 회원가입 |
-| POST | `/api/v1/auth/login` | 로그인 |
-| POST | `/api/v1/auth/logout` | 로그아웃 |
+| POST | `/api/v1/accounts/email/send` | 이메일 인증 코드 발송 |
+| POST | `/api/v1/accounts/email/verify` | 이메일 인증 코드 검증 |
+| POST | `/api/v1/accounts/signup` | 회원가입 |
+| POST | `/api/v1/accounts/login` | 로그인 |
+| POST | `/api/v1/accounts/logout` | 로그아웃 |
 
 ### URL 관리
 
