@@ -1,7 +1,7 @@
-import datetime
+from datetime import datetime
 
 from django.contrib.auth import authenticate
-from django_redis import cache
+from django.core.cache import cache
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 
